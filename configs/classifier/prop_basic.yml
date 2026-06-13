@@ -1,0 +1,2 @@
+affinity:
+  checkpoint: ./logs/affinity/basic/gauss-train/checkpoints/435000.pt   # best 600000.pt

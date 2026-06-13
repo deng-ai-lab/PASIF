@@ -1,0 +1,4 @@
+affinity:
+  checkpoint: ./logs/affinity/add_aromatic/self-train/checkpoints/84000.pt
+  # checkpoint: ./logs/affinity/add_aromatic/noise-train/checkpoints/500000.pt
+

@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: AutoDockTools_py3
+Version: 0+unknown
+Summary: Translation of ADT to python3.x
+Home-page: https://github.com/Valdes-Tresanco-MS/AutoDockTools_py3
+Author: MS. Valdes-Trasanco and ME. Valdes-Tresanco 
+Author-email: bioinfobrothers@gmail.com
+License: MGLTools LICENSE
+Dynamic: author
+Dynamic: author-email
+Dynamic: home-page
+Dynamic: license
+Dynamic: summary

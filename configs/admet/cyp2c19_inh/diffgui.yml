@@ -1,0 +1,49 @@
+# cyp 是否为抑制剂 0好
+# resume: ./logs/admet/caco2/add_aromatic/self-train/checkpoints/13000.pt
+
+train:
+  seed: 2025
+  batch_size: 64
+  max_iters: 1000000
+  max_grad_norm: 8.0
+  optimizer:
+    type: adam
+    lr: 5.e-4
+    weight_decay: 0.0
+    beta1: 0.95
+    beta2: 0.999
+  scheduler:
+    type: plateau
+    factor: 0.6
+    patience: 10
+    min_lr: 1.e-6
+  report_freq: 100
+
+data:
+  follow_batch: 
+    - ligand_element
+
+model:
+  type: diffgui
+  num_atomtype: 16
+  encoder:
+    type: gvptransformer
+    node_feat_dim: 96
+    vec_feat_dim: 16
+    num_layers: 4
+    num_classes: 2
+    cutoff_mode: knn
+    k: 16
+  embedder:
+    emb_dim: 96 
+    atom:
+      type: linear
+    residue:
+      type: linear
+
+eval:
+  val_freq: 1000
+  metrics:
+    - name: auroc
+      true_key: label
+      pred_key: pred

@@ -1,0 +1,64 @@
+# 是否为oatp1b3抑制剂 0好
+# resume: ./logs/affinity/add_aromatic/self-train/checkpoints/66000.pt
+
+train:
+  seed: 2025
+  batch_size: 64
+  max_iters: 1500
+  max_grad_norm: 8.0
+  optimizer:
+    type: adam
+    lr: 1.e-4
+    weight_decay: 0.0
+    beta1: 0.95
+    beta2: 0.999
+  scheduler:
+    type: plateau
+    factor: 0.6
+    patience: 10
+    min_lr: 1.e-6
+  report_freq: 20
+
+data:
+  train: 
+    name: classifier_pl
+    raw_path: ./raw_data/crossdocked_v1.1_rmsd1.0_pocket10
+    path: ./data/classifier/crossdocked_v1.1_rmsd1.0_pocket10
+    split_path: ./data/classifier/crossdocked_pocket10_pose_split.pt
+    transform:
+      - type: featurize_protein_fa
+      - type: featurize_ligand_fa
+        mode: basic
+      - type: center_whole_pos
+      - type: merge
+        keys:
+          - protein
+          - ligand
+  follow_batch: 
+    - ligand_element
+
+model:
+  type: basic
+  num_atomtype: 8
+  encoder:
+    type: gvptransformer
+    node_feat_dim: 64
+    vec_feat_dim: 16
+    num_layers: 3
+    num_classes: 2
+    cutoff_mode: knn
+    k: 16
+  embedder:
+    emb_dim: 64
+    atom:
+      type: linear
+    residue:
+      type: linear
+
+eval:
+  val_freq: 50
+  force_save_freq: 200
+  metrics:
+    - name: auroc
+      true_key: label
+      pred_key: pred
