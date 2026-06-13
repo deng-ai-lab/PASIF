@@ -1,2 +1,2 @@
 # PASIF
-pasif code
+The PASIF code is currently being organized.
