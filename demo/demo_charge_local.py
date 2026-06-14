@@ -56,17 +56,16 @@ def translate(result, translation):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--density_path', type=str, default="./case/par/data/dft-NVP-BHG712.npy")
-    parser.add_argument('--frag', type=str, default="./case/par/data/docked_NVP-BHG712_fixed.sdf")
-    parser.add_argument('--target', type=str, default="./case/par/data/docked_NVP-BHG712_fixed_pocket10.pdb")
-    parser.add_argument('--mask', type=str, default="./case/par/data/mask.npy")
+    parser.add_argument('--density_path', type=str, default="./case/charge/dft.npy")
+    parser.add_argument('--frag', type=str, default="./case/charge/4xli_B_rec_4xli_1n1_lig_tt_min_0.sdf")
+    parser.add_argument('--target', type=str, default="./case/charge/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.pdb")
+    parser.add_argument('--mask', type=str, default="./case/charge/mask.npy")
     parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffbp/pretrain/checkpoints/pretrained.pt')
     parser.add_argument('--classifier', type=str, default='./logs/charge/qm9_schnet')
     parser.add_argument('--model_name', type=str, default='diffbp')
     parser.add_argument('--sample_num', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=1)
-    # parser.add_argument('--iter', type=int, default=1)
-    parser.add_argument('--out_root', type=str, default='./case/par/output')
+    parser.add_argument('--out_root', type=str, default='./case/charge/output_local/')
     parser.add_argument('--seed', type=int, default=2024)
     parser.add_argument('--device', type=str, default='cuda:2')
     parser.add_argument('--threshold', type=int, default=-1)
@@ -75,10 +74,6 @@ if __name__ == '__main__':
 
     seed_all(args.seed)
 
-    # ligand_name = '' + args.target.split('/')[-2]   # tyll!!!!!!!
-    ligand_name = '/'.join(args.target.split('/')[-2:])   # tyll!!!!!!!
-    ligand_name = ligand_name[:-4]     # tyll!!!!!!!
-    print(ligand_name)
     if len(args.model_name.split('-')) == 1:
         model_name = args.model_name + '-' + args.classifier.split('/')[-1]
     else:
@@ -109,23 +104,8 @@ if __name__ == '__main__':
 
     if os.path.exists(args.out_root) is False:
         os.makedirs(args.out_root)
-    
-    all_files = []
     save_dir = os.path.join(args.out_root, args.model_name)
-    save_dir = os.path.join(save_dir, ligand_name)
     os.makedirs(save_dir, exist_ok=True)
-    for f in os.listdir(save_dir):
-        if f.split('_')[0]=='sample':
-            all_files.append(f)
-    all_files = sorted(all_files)
-    if len(all_files) > 0:
-        samples_idx = all_files[-1]
-        samples_idx = samples_idx.split('_')[-1]
-        samples_idx = int(samples_idx.split('.')[0])
-        num_samples = args.sample_num // 2 - samples_idx
-        if num_samples <= args.sample_num // 2:
-            print('Already generated samples for %s, skipping...' % ligand_name)
-            sys.exit(0)
     
     target_dict = PDBProteinFA(args.target).to_dict_atom()
     ligand_dict = parse_sdf_file(args.frag)
@@ -138,8 +118,7 @@ if __name__ == '__main__':
     transfom_list = [FeaturizeProteinFullAtom(), 
                      RemoveLigand(),
                      CenterPos(center_flag='protein'),
-                     AssignMolSizeAround(mean=39, std=5), 
-                     # AssignMolSize(),
+                     AssignMolSize(),
                      AssignMolType(mode=mode, distribution=distribution),
                      AssignMolPos(distribution='gaussian'),
                      MergeKeys(keys=['protein', 'ligand'],
@@ -159,20 +138,6 @@ if __name__ == '__main__':
     count = 0
     enough_flag = False
     for batch in tqdm(loader, desc='ele density', dynamic_ncols=True):
-
-        all_files = []
-        for f in os.listdir(save_dir):
-            if f.split('_')[0]=='sample':
-                all_files.append(f)
-        all_files = sorted(all_files)
-        if len(all_files) > 0:
-            samples_idx = all_files[-1]
-            samples_idx = samples_idx.split('_')[-1]
-            samples_idx = int(samples_idx.split('.')[0])
-            num_samples = args.sample_num // 2 - samples_idx
-            if num_samples <= 0:
-                print('Already generated enough samples for %s, skipping...' % ligand_name)
-                break
 
         try:
             batch = batch.to(args.device)
@@ -208,7 +173,7 @@ if __name__ == '__main__':
                     
                 mol, success = evaluate_validity(mol, args.threshold, args.threshold_ratio)
                 if success:
-                    if count >= args.sample_num//2:
+                    if count >= args.sample_num:
                         enough_flag = True
                         break
                     count += 1
@@ -221,18 +186,3 @@ if __name__ == '__main__':
                 continue
         if enough_flag:
             break
-    # result_path = save_dir
-    # cmd = [
-    #         "python", "./experiment/density/evaluate_high.py",
-    #         "--eval_root", save_dir,
-    #     ]
-    # subprocess.run(cmd, check=True)
-
-    # result_path = save_dir
-    # ref_path = "/home/lfj/projects_dir/tyl/Molcular/CBGBench-master/data/crossdocked_test/CHIB1_ASPFM_39_433_0/3chc_B_rec_3ch9_xrg_lig_tt_min_0.sdf"
-    # cmd = [
-    #         "python", "./experiment/density/evaluate.py",
-    #         "--eval_root", save_dir,
-    #         "--ref_path", ref_path,
-    #     ]
-    # subprocess.run(cmd, check=True)

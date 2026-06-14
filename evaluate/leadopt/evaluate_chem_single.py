@@ -1,6 +1,6 @@
 import argparse
 import os, sys
-
+sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/PASIF-release")
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import numpy as np
@@ -41,11 +41,6 @@ def print_ring_ratio(all_ring_sizes, logger):
 
 def eval_single_mol(mol_path, save_path):
 
-    # now_path = '/home/dataset-local/tyl/projects_dir/Molcular/CBGBench-master/experiment/specifity/MerTK/ligand.sdf'
-    # mol = Chem.SDMolSupplier(now_path)[0]
-    # smiles = Chem.MolToSmiles(mol)
-    # chem_results = scoring.get_chem(mol)
-
     mol = Chem.SDMolSupplier(mol_path)[0]
     smiles = Chem.MolToSmiles(mol)
     chem_results = scoring.get_chem(mol)
@@ -81,17 +76,13 @@ def eval_single_mol(mol_path, save_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', type=eval, default=True)
-    # parser.add_argument('--tag', type=str, default='')
-    parser.add_argument('--result_path', type=str, default='/home/dataset-local/tyl/projects_dir/Molcular/ECloudGen_official-main/results/denovo/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10') # tyll
+    parser.add_argument('--result_path', type=str, default='./results/linker/diffbp/pretrain-dr_slover/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10') # tyll
     parser.add_argument('--pdb_path', type=str, default='./data/crossdocked_test/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.pdb') # tyll
     parser.add_argument('--eval_ref', type=bool, default=True)
     parser.add_argument('--exhaustiveness', type=int, default=16)
     parser.add_argument('--center', type=float, nargs=3, default=None,
                         help='Center of the pocket bounding box, in format x,y,z') # [4.35 , 3.75, 3.16] for adrb1  [1.30, -3.75, -1.90] for drd3
     args = parser.parse_args()
-
-    # !!!!
-    eval_num = 5
 
     receptor_name = args.pdb_path.split('/')[-1].split('.')[0]
     result_path = args.result_path
@@ -109,7 +100,7 @@ if __name__ == '__main__':
     file_list = os.listdir(result_path)
     file_list = sorted([file_name for file_name in file_list if file_name.endswith('.sdf') and 'sample' in file_name and file_name[:-4]!='output'])
 
-    property_csv_flag = os.path.exists(os.path.join(result_path, 'molecule_properties1.csv'))   # ！！！！！！！！！！
+    property_csv_flag = os.path.exists(os.path.join(result_path, 'molecule_properties.csv'))
     if property_csv_flag:
         property_df = pd.read_csv(os.path.join(result_path, 'molecule_properties.csv'))
         property_df.set_index('file_names', inplace=True)
@@ -120,8 +111,6 @@ if __name__ == '__main__':
     num = 0
     for file_name in file_list:
         num += 1
-        if num > eval_num:
-            break
         try:
             dock_result_path = os.path.join(result_path, 'docking_results')
             os.makedirs(dock_result_path, exist_ok=True)
@@ -152,7 +141,6 @@ if __name__ == '__main__':
                     result = eval_single_mol(mol_path, dock_result_path)
                     n_eval_success += 1
                     results.append(result)
-                    # print(1)
             else:
                 result = eval_single_mol(mol_path, dock_result_path)
                 n_eval_success += 1
@@ -162,9 +150,6 @@ if __name__ == '__main__':
             if args.verbose:
                 logger.warning('Evaluation failed for %s' % f'{mol_path}')
             continue
-        
-        # if num >= 100:
-        #     break
 
 
     logger.info(f'Evaluate done! {n_eval_success} samples in total.')
@@ -236,10 +221,4 @@ if __name__ == '__main__':
                             'qed': [ref_result['chem_results']['qed']], 'sa': [ref_result['chem_results']['sa']],
                             'logp': [ref_result['chem_results']['logp']], 'lipinski': [ref_result['chem_results']['lipinski']]})
             df = pd.concat([df, df_concat], ignore_index=True)
-        # df = df.append({'file_names': 'reference', 'smiles': ref_result['smiles'],
-        #                 'vina_dock_result': ref_result['vina']['dock']['affinity'],
-        #                 'vina_min_result': ref_result['vina']['minimize']['affinity'],
-        #                 'vina_score_result': ref_result['vina']['score_only']['affinity'],
-        #                 'qed': ref_result['chem_results']['qed'], 'sa': ref_result['chem_results']['sa'],
-        #                 'logp': ref_result['chem_results']['logp'], 'lipinski': ref_result['chem_results']['lipinski']}, ignore_index=True)
         df.to_csv(os.path.join(result_path, 'molecule_properties.csv'), index=False)

@@ -430,24 +430,6 @@ class DiffSBDD(BaseDiff):
                     x_lig_next, x_rec_0 = self.pos_scheduler.sample_p_zs_given_zt(
                          s_array, t_array, x_lig, x_rec_0, batch_idx_lig, batch_idx_rec,
                          x_lig_pred, com=True)
-                    
-                    # x_lig_unknown = x_lig_next
-                    # com_rec = scatter_mean(x_rec_0, batch_idx_rec, dim=0)
-                    # x_lig_mu_align = x_lig_0 + (com_rec - com_rec_0)[batch_idx_lig]
-                    # x_lig_known, pos_noise, x_rec_0 = self.pos_scheduler.forward_pos_center_noise(
-                    #     (x_lig_mu_align, x_rec_0), s_array, (batch_idx_lig, batch_idx_rec), 
-                    #     diff_mask, zero_center=False, com=True)
-                    # com_noised = scatter_mean(x_lig_known[~gen_flag_lig.bool().view(-1)],
-                    #                           batch_idx_lig[~gen_flag_lig.bool().view(-1)], dim=0)
-                    # com_denoised = scatter_mean(x_lig_unknown[~gen_flag_lig.bool().view(-1)],
-                    #                             batch_idx_lig[~gen_flag_lig.bool().view(-1)], dim=0)
-                    # x_lig_known = x_lig_known + (com_denoised - com_noised)[batch_idx_lig]
-                    # x_rec_0 = x_rec_0 + (com_denoised - com_noised)[batch_idx_rec]
-                    # x_lig = x_lig_unknown * gen_flag_lig[:, None].float() + \
-                    #             (1 - gen_flag_lig[:, None].float()) * x_lig_known
-                    # x_lig, x_rec_0 = self.pos_scheduler.sample_p_zt_given_zs(
-                    #         x_lig, x_rec_0, batch_idx_lig, batch_idx_rec, s_array, 
-                    #         t_array, com=True)
                 else:
                     x_lig_next = x_lig
 
@@ -455,16 +437,6 @@ class DiffSBDD(BaseDiff):
                     c_lig_next, v_rec_0 = self.pos_scheduler.sample_p_zs_given_zt(
                             s_array, t_array, c_lig, v_rec_0, batch_idx_lig, batch_idx_rec, 
                             c_lig_out, com=False)
-                    
-                    # c_lig_unknown = c_lig_next
-                    # c_lig_known, type_noise = self.pos_scheduler.forward_type_add_noise(
-                    #             v_lig_0, s_array, batch_idx_lig, diff_mask)
-                    # c_lig = c_lig_unknown * gen_flag_lig[:, None].float() + \
-                    #         (1 - gen_flag_lig[:, None].float()) * c_lig_known
-                    # c_lig, v_rec_0 = self.pos_scheduler.sample_p_zt_given_zs(
-                    #         c_lig, v_rec_0, batch_idx_lig, batch_idx_rec, s_array, 
-                    #         t_array, com=False)
-
                 else:
                     c_lig_next = c_lig
 
@@ -512,10 +484,6 @@ class DiffSBDD(BaseDiff):
         x_lig, c_lig, x_rec_0 = self.sample_p_xh_given_z0(x_lig_next, c_lig_next, x_rec_0, v_rec_0, aa_rec_0, 
                                                  batch_idx_lig, batch_idx_rec, lig_flag, rec_flag, 
                                                  gen_flag_lig, gen_flag_rec)
-
-        # com_rec = scatter_mean(x_rec_0, batch_idx_rec, dim=0)
-        # x_lig = x_lig + (com_rec_0 - com_rec)[batch_idx_lig]
-        # x_rec_0 = x_rec_0 + (com_rec_0 - com_rec)[batch_idx_rec]
 
         traj[0] = (x_lig.cpu(), c_lig.cpu(), batch_idx_lig.cpu())    
         return traj

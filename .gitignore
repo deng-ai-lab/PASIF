@@ -2,3 +2,6 @@ data/
 logs/
 results/
 tools/
+temp/
+tmp/
+case/

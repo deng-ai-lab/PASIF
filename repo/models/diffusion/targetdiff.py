@@ -230,21 +230,7 @@ class TargetDiff(BaseDiff):
 
         unif_dist = Categorical(probs=torch.ones_like(c_lig_in)/self.num_classes)
 
-        # T = torch.full(size=(B,), fill_value=true_t(time_steps), dtype=torch.long, device=x_lig_in.device)
-        # x_lig_known, _ = self.pos_scheduler.forward_add_noise(x_lig_in, T, batch_idx_lig, gen_flag_lig)
-        # x_lig_unkonwn = torch.randn_like(x_lig_in)
-        # x_lig_init = (1. - gen_flag_lig[:, None].float()) * x_lig_known + \
-        #             gen_flag_lig[:, None].float() * x_lig_unkonwn
         x_lig_init = torch.randn_like(x_lig_in)
-
-        # c_lig_known, v_lig_known = self.type_scheduler.forward_add_noise(v_lig_in, T, batch_idx_lig, gen_flag_lig)
-        # dist = Categorical(probs=torch.ones_like(c_lig_in)/self.num
-        #       
-        # :/_classes)
-        # v_lig_in = dist.sample()
-        # c_lig_unknown = F.one_hot(v_lig_in, num_classes = self.num_classes).float()
-        # c_lig_init = (1 - gen_flag_lig[:, None].float()) * c_lig_known + \
-        #             gen_flag_lig[:, None].float() * c_lig_unknown
         v_lig_init = unif_dist.sample()
         c_lig_init = F.one_hot(v_lig_init, num_classes = self.num_classes).float()
         
@@ -258,23 +244,13 @@ class TargetDiff(BaseDiff):
             t = s + 1
             t_diff = true_t(t).long()
             s_diff = true_t(s).long()
-            # if s_idx == 0:
-            #     resamples = 1
             re_i = 0
             while(re_i < resamples):
                 
-                # if s_idx == time_steps-1:
-                #     x_lig_known = torch.randn_like(x_lig_in)
-                # else:
                 x_lig_known, _ = self.pos_scheduler.forward_add_noise(x_lig_in, t_diff, batch_idx_lig, diff_mask)
                 x_lig_t = (1 - gen_flag_lig[:, None].float()) * x_lig_known + \
                         gen_flag_lig[:, None].float() * x_lig_unknown
                 
-                # if s_idx == time_steps-1:
-                #     dist = Categorical(probs=torch.ones_like(c_lig_in)/self.num_classes)
-                #     v_lig_known = dist.sample()
-                #     c_lig_known = F.one_hot(v_lig_known, num_classes = self.num_classes).float()
-                # else:
                 c_lig_known, v_lig_known = self.type_scheduler.forward_add_noise(v_lig_in, t_diff, batch_idx_lig, diff_mask)
                 c_lig_t = (1 - gen_flag_lig[:, None].float()) * c_lig_known + \
                         gen_flag_lig[:, None].float() * c_lig_unknown            
@@ -295,9 +271,6 @@ class TargetDiff(BaseDiff):
                     c_pred = F.softmax(c_lig_out, dim=-1)
 
                 if self.denoise_structure:    
-                    # x_lig_next = self.pos_scheduler.backward_remove_noise(x_lig_out, x_lig_t, t, 
-                    #                                                     batch_idx_lig, gen_flag_lig, 
-                    #                                                     type='denoise')
                     x_lig_next = self.pos_scheduler.sample_xs_given_x0_xt(x0=x_lig_out, xt=x_lig_t, s=s_diff, t=t_diff, 
                                                                           batch=batch_idx_lig, gen_flag=diff_mask)
                     x_lig_unknown, _ = self.pos_scheduler.multi_step_add_noise(x_lig_next, t_diff, s_diff, 
@@ -307,9 +280,6 @@ class TargetDiff(BaseDiff):
                     x_lig_unknown = x_lig_t
                     
                 if self.denoise_atom:
-                    # c_lig_next, _ = self.type_scheduler.backward_remove_noise(c_lig_out, c_lig_t, t, 
-                    #                                                         batch_idx_lig, gen_flag_lig, 
-                    #                                                         pred_logit=True)
                     c_lig_next, _ = self.type_scheduler.sample_xs_given_xt_x0(c_pred, c_lig_t, t_diff, s_diff, 
                                                                               batch_idx_lig, diff_mask)
                     c_lig_unknown, _ = self.type_scheduler.multi_step_add_noise(c_lig_next, t_diff, s_diff, 
@@ -784,135 +754,3 @@ class TargetDiff(BaseDiff):
             
             traj[t_idx - 1] = (x_lig_mu.detach().cpu(), F.softmax(c_lig_mu/temp, dim=-1).detach().cpu(), batch_idx_lig.detach().cpu())
         return traj
-
-
-    def dr_slover_finetune(self, batch, ts, sampler, init_noise=False):
-        # x_lig_in = batch['ligand_pos']
-        # v_lig_in = batch['ligand_atom_type']
-        x_lig_0 = batch['ligand_pos']
-        v_lig_0 = batch['ligand_atom_type']
-        x_rec_0 = batch['protein_pos']
-        v_rec_0 = batch['protein_atom_feature']
-        aa_rec_0 = batch['protein_aa_type']
-        lig_flag = batch['ligand_lig_flag']
-        rec_flag = batch['protein_lig_flag']
-        gen_flag_lig = batch.get('ligand_gen_flag', lig_flag)
-        batch_idx_lig = batch['ligand_element_batch']
-        batch_idx_rec = batch['protein_element_batch']
-        gen_flag_rec = batch.get('protein_gen_flag', torch.zeros_like(rec_flag))
-
-        if gen_flag_lig.all().item():
-            return []
-        
-        eps = 1.e-5
-
-        aa_rec_0 = F.one_hot(aa_rec_0, num_classes = len(aa_name_number)).float()
-        c_lig_0 = F.one_hot(v_lig_0, num_classes = self.num_classes).float()
-
-        time_seq = list(reversed(range(0, self.num_diffusion_timesteps)))
-        N_lig, _ = x_lig_0.shape
-        N_rec, _ = x_rec_0.shape
-        B = batch_idx_lig.max() + 1
-        sigma_x0 = 0.0001  # variational dist var
-        sigma_c0 = 0.001  # observe dist var
-        
-        from torch.distributions import Categorical
-        unif_probs = torch.ones_like(c_lig_0) / c_lig_0.shape[-1]
-        x_lig_unknown = torch.randn_like(x_lig_0)
-        if init_noise:
-            x_lig_in = x_lig_unknown
-            c_lig_in = unif_probs
-        else:
-            x_lig_in = gen_flag_lig[:, None].float() * x_lig_unknown + \
-                    (1. - gen_flag_lig[:, None].float()) * x_lig_0
-            c_lig_in = gen_flag_lig[:, None].float() * unif_probs + \
-                    (1. - gen_flag_lig[:, None].float()) * c_lig_0
-        x_lig_mu = x_lig_in.detach().clone()
-        c_lig_mu = c_lig_in.detach().clone()
-        c_lig_mu_norm = c_lig_mu.detach().clone()
-        h_mask = 1. - (gen_flag_lig).float()[:, None]
-
-        traj = {ts[0]: (x_lig_mu.detach().cpu(), c_lig_mu_norm.detach().cpu(), batch_idx_lig.detach().cpu())}
-
-        temp = 0.5
-        for t_idx in tqdm(ts, desc='sampling', total=len(ts)):
-
-            t = torch.full(size=(B,), fill_value=t_idx, dtype=torch.long, device=x_lig_in.device)
-
-            # if t_idx == ts[0]:
-            #     c_lig_mu_norm = c_lig_mu
-            # else:
-            #     c_lig_mu_norm = F.softmax(c_lig_mu/temp, dim=-1)
-            
-            noise_x0 = torch.randn_like(x_lig_mu)
-            x0_pred = x_lig_mu + sigma_x0 * noise_x0
-            c0_pred = c_lig_mu_norm
-            dist = Categorical(probs=c0_pred)
-            v0_pred = dist.sample()
-
-            x_lig_t, pos_noise = self.pos_scheduler.forward_add_noise(x0_pred, t, batch_idx_lig, torch.ones_like(gen_flag_lig))
-            c_lig_t, v_lig_t = self.type_scheduler.forward_add_noise(v0_pred, t, batch_idx_lig, torch.ones_like(gen_flag_lig))
-
-            with torch.no_grad():
-                x_lig, x_rec, h_lig, h_rec = self.context_embedder(x_lig_t, x_rec_0, c_lig_t, v_rec_0, aa_rec_0, 
-                                                                batch_idx_lig, batch_idx_rec, lig_flag, rec_flag, t)
-            
-                context_composed, batch_idx, _ = compose_context({'x': x_lig, 'h': h_lig, 'gen_flag': torch.ones_like(gen_flag_lig), 'lig_flag':lig_flag},
-                                                                {'x': x_rec, 'h': h_rec, 'gen_flag': gen_flag_rec, 'lig_flag':rec_flag},
-                                                                batch_idx_lig, batch_idx_rec)
-                
-                x, h, v = self.denoiser(batch_idx=batch_idx, **context_composed)
-
-                x_lig_out = x[context_composed['lig_flag']]
-                c_lig_out = v[context_composed['lig_flag']]
-                c_lig_pred = F.softmax(c_lig_out, dim=-1)
-            
-            pyx = (1 - sigma_c0) * c_lig_0 + sigma_c0 * unif_probs
-            grad_x_obs = 0.5 * h_mask * (x_lig_0 - x_lig_mu)
-            grad_c_obs = - h_mask * (torch.log(pyx.clamp(min=1.e-3, max=0.999)))
-
-            grad_x_noise = (x_lig_mu - x_lig_out)
-            _, grad_p0t  = self.loss_noise_p0t(c_lig_t, t, q0=c_lig_mu_norm, p0t=c_lig_pred, batch_idx=batch_idx_lig)
-            _, grad_pt   = self.loss_noise_pt(c_lig_t, t, q0=c_lig_mu_norm, p0t=c_lig_pred, batch_idx=batch_idx_lig)
-            grad_c_noise = (grad_pt + grad_p0t)
-
-            scale_x_obs   = torch.norm(grad_x_obs, dim=-1, keepdim=True) + eps
-            scale_x_noise = torch.norm(grad_x_noise, dim=-1, keepdim=True) + eps
-            scale_x_out   = torch.norm(x_lig_out, dim=-1, keepdim=True) + eps
-
-            vec_x_obs   = grad_x_obs / scale_x_obs
-            vec_x_noise = grad_x_noise / scale_x_noise
-            vec_x_out   = x_lig_out / scale_x_out
-
-            t_in = t[batch_idx_lig][:, None].float() / self.num_diffusion_timesteps
-            v_lig_mu_onehot = F.one_hot(v0_pred, num_classes = self.num_classes).float()
-            scale_in = torch.concat([grad_c_obs, grad_c_noise, c_lig_pred, v_lig_mu_onehot, t_in], dim=-1)
-            vec_in = torch.concat([grad_x_obs[:, None, :], grad_x_noise[:, None, :], x_lig_out[:, None, :]], dim=1)
-            x_in = x_lig_mu
-
-            with torch.no_grad():
-                grad_c_hat, grad_x_hat = sampler(x=x_in, vec=vec_in, h=scale_in, batch_idx=batch_idx_lig)
-            grad_x_hat = grad_x_hat[:, 0, :]
-
-            if torch.isnan(grad_c_hat).any():
-                breakpoint()
-
-            jac_mat = self.softmax_jacobian(c_lig_mu, temp)
-            grad_x = grad_x_hat
-            grad_c = c_lig_mu_norm * (grad_c_hat - (c_lig_mu_norm*grad_c_hat).sum(-1, keepdim=True))
-            grad_c_true = torch.matmul(jac_mat.transpose(-1, -2), grad_c[:, :, None])[:, :, 0]
-            x_lig_mu = x_lig_mu - 0.001 * grad_x
-            # c_lig_mu = c_lig_mu - 0.001 * grad_c_true
-            # c_lig_mu_norm = F.softmax(c_lig_mu/temp, dim=-1)
-            c_lig_mu_norm = c_lig_mu_norm - 0.001 * grad_c
-            c_lig_mu_norm = c_lig_mu_norm.clamp(min=0.001, max=0.999)
-            c_lig_mu_norm = c_lig_mu_norm / c_lig_mu_norm.sum(-1, keepdim=True)
-
-            assert (c_lig_mu_norm.sum(-1).mean().item() - 1.)**2 < 1.e-3
-            assert (c_lig_mu_norm>0).all() == True
-
-            traj[t_idx - 1] = (x_lig_mu.detach().cpu(), c_lig_mu_norm.detach().cpu(), batch_idx_lig.detach().cpu())
-
-        return traj
-       
-

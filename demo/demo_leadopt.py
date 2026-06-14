@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/CBGBench-master")
+sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/PASIF-release")
 import argparse
 import copy
 import json
@@ -26,9 +26,6 @@ from repo.datasets.transforms.protein_featurizer import FeaturizeProteinFullAtom
 from repo.datasets.transforms.init_lig import AssignMolSizeAround, AssignLeadOptSize, AssignGenSize, AssignGenType, AssignGenPos
 from repo.datasets.transforms.translation import CenterPos
 from repo.datasets.transforms.merge import MergeKeys
-
-
-# os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 
 def split_batch_into_samples(batch, mode='add_aromatic'):
@@ -71,13 +68,13 @@ def translate(result, translation):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--frag', type=str, default="./case/raw_data/ZINC00091_mask.sdf")
-    parser.add_argument('--target', type=str, default="./case/raw_data/ZINC000919750150_pocket10.pdb")
-    parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffsbdd/pretrain/checkpoints/pretrained.pt')
-    parser.add_argument('--model_name', type=str, default='diffsbdd')
-    parser.add_argument('--sample_num', type=int, default=100)
-    parser.add_argument('--batch_size', type=int, default=10)
-    parser.add_argument('--out_root', type=str, default='./case/output')
+    parser.add_argument('--frag', type=str, default="./case/leadopt/frag.sdf")
+    parser.add_argument('--target', type=str, default="./case/leadopt/pocket.pdb")
+    parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffbp/pretrain/checkpoints/pretrained.pt')
+    parser.add_argument('--model_name', type=str, default='diffbp')
+    parser.add_argument('--sample_num', type=int, default=5)
+    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--out_root', type=str, default='./case/leadopt/output')
     parser.add_argument('--seed', type=int, default=2024)
     parser.add_argument('--device', type=str, default='cuda:1')
     parser.add_argument('--threshold', type=int, default=-1)
@@ -173,18 +170,6 @@ def main():
                     save_mol(mol, os.path.join(save_dir, 'sample_%04d.sdf' % count))
             except:
                 continue
-
-
-    # evaluate
-    result_path = save_dir
-    pdb_path = args.target
-    cmd = [
-            "python", "./evaluate_scripts/evaluate_chem_single.py",
-            "--result_path", result_path,
-            "--pdb_path", pdb_path,
-        ]
-    # os.system(' '.join(cmd))
-    subprocess.run(cmd, check=True)
 
 
 if __name__ == '__main__':

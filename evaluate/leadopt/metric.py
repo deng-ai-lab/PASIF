@@ -12,10 +12,7 @@ def weighted_average(dataframe, value, weight=None):
 
 if __name__ == '__main__':
 
-    eval_root = './results/denovo/diffsbdd/pretrain-sample'
-    ref_csv = './results/ref.csv'
-    ref_df = pd.read_csv(ref_csv)
-    ref_df = ref_df.set_index('names')
+    eval_root = './results/linker/diffbp/pretrain-dr_slover'
     pockets = os.listdir(eval_root)
     pockets = sorted(pockets)
     pockets_num = len(pockets)
@@ -25,8 +22,6 @@ if __name__ == '__main__':
     no_success_num = 0
     pred_label = [[], []]
     for pocket in pockets:
-        # if pocket == 'PLCD1_RAT_134_756_0':
-        #     breakpoint()
         pocket_path = os.path.join(eval_root, pocket)
         if not os.path.isdir(pocket_path):
             continue
@@ -44,13 +39,12 @@ if __name__ == '__main__':
                     print(f'Warning: no csv file in {csv_path}')
                     continue
                 df = pd.read_csv(csv_path)
-                # df.sort_values(by="file_names" , inplace=True, ascending=True) 
                 if len(df) <= 1:
                     no_success_num += 1
                     print(f'Warning: no success molecule in {tmp_path}')
                     continue
                 ref_idx = '/'.join(tmp_path.split('/')[-2:])
-                ref_v = ref_df.loc[ref_idx]
+                ref_v = df.iloc[-1]
 
                 if os.path.exists(prop_pred_path):
                     prop_df = pd.read_csv(prop_pred_path)
@@ -67,17 +61,12 @@ if __name__ == '__main__':
                 res_dict['pocket'].append(pocket)
                 res_dict['num'].append(num)
                 res_dict['vina score'].append(df['vina_score_result'].iloc[:num].mean())
-                # res_dict['vina score imp'].append(np.sum(df['vina_score_result'].values[:num] < df['vina_score_result'].values[-1])/num * 100)
                 res_dict['vina score imp'].append(np.sum(df['vina_score_result'].values[:num] < ref_v['vina_score_result'])/num * 100)
                 res_dict['vina min'].append(df['vina_min_result'].iloc[:num].mean())
-                # res_dict['vina min imp'].append(np.sum(df['vina_min_result'].values[:num] < df['vina_min_result'].values[-1])/num * 100)
                 res_dict['vina min imp'].append(np.sum(df['vina_min_result'].values[:num] < ref_v['vina_min_result'])/num * 100)
                 res_dict['vina dock IBE'].append(df['lbe_result'].iloc[:num].mean())
                 res_dict['vina dock'].append(df['vina_dock_result'].iloc[:num].mean())
-                # res_dict['vina dock imp'].append(np.sum(df['vina_dock_result'].values[:num] < df['vina_dock_result'].values[-1])/num * 100)
                 res_dict['vina dock imp'].append(np.sum(df['vina_dock_result'].values[:num] < ref_v['vina_dock_result'])/num * 100)
-                # res_dict['vina dock MPBG'].append(np.mean((df['vina_dock_result'].values[:num] - df['vina_dock_result'].values[-1])
-                #                                           /df['vina_dock_result'].values[-1]) * 100)
                 res_dict['vina dock MPBG'].append(np.mean((df['vina_dock_result'].values[:num] - ref_v['vina_dock_result'])
                                                         /ref_v['vina_dock_result']) * 100)
                 res_dict['qed'].append(df['qed'].iloc[:num].mean())

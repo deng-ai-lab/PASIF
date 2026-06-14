@@ -45,14 +45,12 @@ def align_molecules_o3a(ref_path, probe_path):
 
 if __name__ == '__main__':
 
-    # tasks = ['linker', 'frag', 'scaffold', 'sidechain']
     test_data_root = './data/crossdocked_test'
     tasks = ['linker', 'frag', 'sidechain', 'scaffold']  # 'linker', 'frag', 'sidechain', 
     rate_dict = {}
     for task in tasks:
         task_rate = 0.
         num = 0
-        # eval_root = f'./results/{task}/diffgui/frag_diff-no_bond'
         eval_root = f'./results/{task}/targetdiff/pretrain-inpaint'
         deepest_subfolders = get_all_sencond_subfolders(eval_root)
 

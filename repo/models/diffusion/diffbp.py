@@ -612,9 +612,6 @@ class DiffBP(BaseDiff):
         aa_rec_0 = F.one_hot(aa_rec_0, num_classes = len(aa_name_number)).float()
         c_lig_in = F.one_hot(v_lig_in, num_classes = self.num_classes).float()
 
-        time_seq = list(reversed(range(0, self.num_diffusion_timesteps)))
-        N_lig, _ = x_lig_in.shape
-        N_rec, _ = x_rec_0.shape
         B = batch_idx_lig.max() + 1
 
         sigma_x0 = 0.0001

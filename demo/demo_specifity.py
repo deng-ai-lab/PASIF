@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/CBGBench-master")
+sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/PASIF-release")
 import argparse
 import shutil
 import subprocess
@@ -50,16 +50,15 @@ def translate(result, translation):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--frag', type=str, default='./experiment/specifity/MerTK/docked/docked_9bhk.sdf')
-    parser.add_argument('--target', type=str, default='./experiment/specifity/MerTK/docked/docked_9bhk_pocket10.pdb')
-    parser.add_argument('--off_target', type=str, default='./experiment/specifity/MerTK/docked/docked_2buj_pocket10.pdb')
+    parser.add_argument('--frag', type=str, default='./case/specificity/docked/docked_9bhk.sdf')
+    parser.add_argument('--target', type=str, default='./case/specificity/docked/docked_9bhk_pocket10.pdb')
+    parser.add_argument('--off_target', type=str, default='./case/specificity/docked/docked_2buj_pocket10.pdb')
     parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffbp/pretrain/checkpoints/pretrained.pt')
     parser.add_argument('--classifier', type=str, default='./logs/affinity/add_aromatic/self-train/checkpoints/180000.pt')
     # parser.add_argument('--classifier', type=str, default='./logs/affinity/basic/self-train/checkpoints/98000.pt')
     parser.add_argument('--model_name', type=str, default='diffbp')
     parser.add_argument('--sample_num', type=int, default=50)
-    parser.add_argument('--iter', type=int, default=1)
-    parser.add_argument('--out_root', type=str, default='./results/specify/MerTK-9bhk-2buj')
+    parser.add_argument('--out_root', type=str, default='./case/specificity/output')
     parser.add_argument('--seed', type=int, default=2024)
     parser.add_argument('--device', type=str, default='cuda:3')
     parser.add_argument('--threshold', type=int, default=-1)
