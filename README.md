@@ -1,5 +1,4 @@
-# PASIF
-*A plug-and-play framework enables tailored molecular design in zero-shot biological regimes*
+# PASIF: A plug-and-play framework enables tailored molecular design in zero-shot biological regimes
 ![图片加载失败](./picture/model-readme.svg)
 
 The PASIF code is currently being organized.
