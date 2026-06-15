@@ -2,7 +2,7 @@ model:
   type: diffsbdd
   checkpoint: ./logs/denovo/diffsbdd/pretrain/checkpoints/pretrained.pt
 
-predictor: !include /home/dataset-local/tyl/projects_dir/Molcular/CBGBench-master/configs/classifier/prop_basic.yml
+# predictor: !include ./configs/classifier/prop_basic.yml
 
 data:
   test: 

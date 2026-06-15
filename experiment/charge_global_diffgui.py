@@ -81,9 +81,9 @@ def translate(result, translation):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--density_path', type=str, default="/home/dataset-local/tyl/projects_dir/Molcular/ED2Mol-main/results/CHIB1_ASPFM_39_433_0/ligED.npy")
-    parser.add_argument('--frag', type=str, default="./data/crossdocked_test/CHIB1_ASPFM_39_433_0/3chc_B_rec_3ch9_xrg_lig_tt_min_0.sdf")
-    parser.add_argument('--target', type=str, default="./data/crossdocked_test/CHIB1_ASPFM_39_433_0/3chc_B_rec_3ch9_xrg_lig_tt_min_0_pocket10.pdb")
+    parser.add_argument('--density_path', type=str, default="./data/electron/ABL2_HUMAN_274_551_0/ligED-4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.npy")
+    parser.add_argument('--frag', type=str, default="./data/crossdocked_test/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0.sdf")
+    parser.add_argument('--target', type=str, default="./data/crossdocked_test/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.pdb")
     parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffgui/pretrain/checkpoints/pretrained.pt')
     parser.add_argument('--classifier', type=str, default='./logs/charge/qm9_schnet')
     parser.add_argument('--model_name', type=str, default='diffgui')

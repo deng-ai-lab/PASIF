@@ -47,13 +47,13 @@ def translate(result, translation):
 
 parma_dict = {'ppb':     {'model_type': 'reg', 'ckp': '5000.pt', 'opt': 0.8},
               'oatp1b3': {'model_type': 'cls', 'ckp': '150.pt',  'opt': 0.2},
-              'oatp1b1': {'model_type': 'cls', 'ckp': '400.pt',  'opt': 0.2},
+              'oatp1b1': {'model_type': 'cls', 'ckp': '450.pt',  'opt': 0.2},
               'cyp2c19_inh': {'model_type': 'cls', 'ckp': '5000.pt',  'opt': 0.2},}
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--prop', type=str, default='oatp1b3')
+    parser.add_argument('--prop', type=str, default='cyp2c19_inh')
     parser.add_argument('--frag', type=str, default='./case/admet/4xli_B_rec_4xli_1n1_lig_tt_min_0.sdf')
     parser.add_argument('--target', type=str, default='./case/admet/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.pdb')
     parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffbp/pretrain/checkpoints/pretrained.pt')
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--out_root', type=str, default='./case/admet/output')
     parser.add_argument('--seed', type=int, default=2024)
-    parser.add_argument('--device', type=str, default='cuda:3')
+    parser.add_argument('--device', type=str, default='cuda:1')
     parser.add_argument('--threshold', type=int, default=-1)
     parser.add_argument('--threshold_ratio', type=int, default=0.6)
     args = parser.parse_args()

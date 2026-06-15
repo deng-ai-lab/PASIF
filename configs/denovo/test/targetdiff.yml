@@ -1,6 +1,6 @@
 model:
   type: targetdiff
-  checkpoint: ./logs/denovo/targetdiff/targetdiff_2024_04_18__23_35_39/checkpoints/4390000.pt
+  checkpoint: ./logs/denovo/targetdiff/pretrain/checkpoints/pretrained.pt
 
 data:
   test: 

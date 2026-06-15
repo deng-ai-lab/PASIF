@@ -19,19 +19,12 @@ def process_one(test_turple):
     sdf_file = pocket.split('/')[1]
     ligand = test_turple[1]
 
-    if use_protein :
-        data_root_local = os.path.join(data_root, 'crossdocked_v1.1_rmsd1.0')
-        pocket_path = os.path.join(data_root_local, file_name)
-        pocket_path = os.path.join(pocket_path, sdf_file[:10]+'.pdb')
-        mol_path = os.path.join(data_root_local, ligand)
-        output_dir = f'/home/dataset-local/tyl/projects_dir/Molcular/ED2Mol-main/results/ligED/protein/{file_name}'
-    else:
-        data_root_local = os.path.join(data_root, 'crossdocked_test')
-        pocket_path = os.path.join(data_root_local, pocket)
-        mol_path = os.path.join(data_root_local, ligand)
-        output_dir = f'/home/dataset-local/tyl/projects_dir/Molcular/ED2Mol-main/results/ligED/{file_name}'
-    
-    ligED_path = os.path.join(output_dir, 'ligED.npy')
+    data_root_local = os.path.join(data_root, 'crossdocked_test')
+    pocket_path = os.path.join(data_root_local, pocket)
+    mol_path = os.path.join(data_root_local, ligand)
+
+    ligED_path = os.path.join(data_root, 'electron')
+    ligED_path = os.path.join(ligED_path, f'{file_name}/ligED-{sdf_file[:-4]}.npy')
     if os.path.exists(ligED_path) is False:
         print(f'{file_name} should be processed!')
         return 1
@@ -42,8 +35,25 @@ def process_one(test_turple):
         return 1
 
     if model == 'diffgui':
-        cmd = [
-        "python", "./experiment/charge_opt_vae_diffgui.py",
+        py_file = "./experiment/charge_global_diffgui.py"
+    else:
+        py_file = "./experiment/charge_global.py"
+
+    # if model == 'diffgui':
+    #     cmd = [
+    #     "python", py_file,
+    #     "--density_path", ligED_path,
+    #     "--frag", mol_path,
+    #     "--target", pocket_path,
+    #     "--checkpoint", f'./logs/denovo/{model}/pretrain/checkpoints/pretrained.pt',
+    #     '--model_name', model,
+    #     '--device', device,
+    #     '--out_root', './results/charge'
+    # ]
+    # else:
+
+    cmd = [
+        "python", py_file,
         "--density_path", ligED_path,
         "--frag", mol_path,
         "--target", pocket_path,
@@ -52,17 +62,6 @@ def process_one(test_turple):
         '--device', device,
         '--out_root', './results/charge'
     ]
-    else:
-
-        cmd = [
-            "python", "./experiment/charge_opt_vae.py",
-            "--density_path", ligED_path,
-            "--frag", mol_path,
-            "--target", pocket_path,
-            "--checkpoint", f'./logs/denovo/{model}/pretrain/checkpoints/pretrained.pt',
-            '--model_name', model,
-            '--device', device
-        ]
 
     subprocess.run(cmd, check=True)
 
@@ -70,15 +69,11 @@ def process_one(test_turple):
 if __name__ == '__main__':
 
     # assign mol size !!!!!
-    model = 'diffsbdd'
-    device = 'cuda:1'
+    model = 'diffbp'
+    device = 'cuda:0'
     split_path = torch.load(f"./data/split_by_name_10m.pt")
 
-    use_protein = False
-    if use_protein:
-        data_root = "./raw_data/"
-    else:
-        data_root = "./data/"
+    data_root = "./data/"
 
     test_list = split_path['test']
 

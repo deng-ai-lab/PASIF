@@ -1,6 +1,4 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-os.environ["BABEL_LIBDIR"] = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/lib/openbabel/3.1.0"
 import argparse
 import subprocess
 import joblib

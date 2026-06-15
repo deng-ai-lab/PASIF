@@ -76,8 +76,8 @@ def eval_single_mol(mol_path, save_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', type=eval, default=True)
-    parser.add_argument('--result_path', type=str, default='./results/linker/diffbp/pretrain-dr_slover/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10') # tyll
-    parser.add_argument('--pdb_path', type=str, default='./data/crossdocked_test/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.pdb') # tyll
+    parser.add_argument('--result_path', type=str, default='./case/leadopt/output/diffbp') # tyll
+    parser.add_argument('--pdb_path', type=str, default='./case/leadopt/pocket.pdb') # tyll
     parser.add_argument('--eval_ref', type=bool, default=True)
     parser.add_argument('--exhaustiveness', type=int, default=16)
     parser.add_argument('--center', type=float, nargs=3, default=None,

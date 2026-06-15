@@ -5,3 +5,6 @@ tools/
 temp/
 tmp/
 case/
+case.zip
+data.zip
+zenodo-tst.ipynb

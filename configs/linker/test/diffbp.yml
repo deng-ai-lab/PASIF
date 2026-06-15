@@ -2,7 +2,7 @@ model:
   type: diffbp
   checkpoint: ./logs/denovo/diffbp/selftrain/checkpoints/4000000.pt
 
-predictor: !include /home/dataset-local/tyl/projects_dir/Molcular/CBGBench-master/configs/classifier/prop_add_aromatic.yml
+predictor: !include ./configs/classifier/prop_add_aromatic.yml
 
 
 data:
@@ -52,7 +52,7 @@ data:
 
 sampling:
   seed: 2022
-  num_samples: 5
+  num_samples: 50
   translate: true
 
 reconstruct:

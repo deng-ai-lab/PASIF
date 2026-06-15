@@ -109,7 +109,7 @@ if __name__ == '__main__':
     name = 'MerTK'
     target = '9bhk'    
     off_target = '2buj'
-    model = 'targetdiff'
+    model = 'diffbp'
     protein_path = f"./data/specificity/{name}/{target}_protein.pdb"
     protein_pdbqt = protein_path[:-4] + '.pdbqt'
     protein_path_off = f"./data/specificity/{name}/{off_target}_protein.pdb"

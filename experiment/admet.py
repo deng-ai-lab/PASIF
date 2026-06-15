@@ -134,7 +134,6 @@ def main():
 
     for i in range(mark, len(dataset)):
         
-        
         args.index = i
         get_structure = lambda: dataset[args.index]
         get_raw_structure = lambda: dataset.dataset.get_raw(dataset.indices[args.index])

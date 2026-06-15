@@ -3,7 +3,7 @@ model:
   type: targetdiff
   checkpoint: ./logs/denovo/targetdiff/pretrain/checkpoints/pretrained.pt
 
-predictor: !include /home/lfj/projects_dir/tyl/Molcular/CBGBench-master/configs/classifier/prop_add_aromatic.yml
+# predictor: !include ./configs/classifier/prop_add_aromatic.yml
 
 data:
   test: 
@@ -54,7 +54,7 @@ data:
 
 sampling:
   seed: 2022
-  num_samples: 50
+  num_samples: 5
   translate: true
 
 reconstruct:

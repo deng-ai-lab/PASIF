@@ -1,9 +1,4 @@
 import os, sys
-target_lib_path = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/lib"
-current_ld_path = os.environ.get("LD_LIBRARY_PATH", "")
-os.environ["LD_LIBRARY_PATH"] = f"{target_lib_path}:{current_ld_path}"
-os.environ["BABEL_LIBDIR"] = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/lib/openbabel/3.1.0"
-os.environ["BABEL_DATADIR"] = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/share/openbabel"
 sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/PASIF-release")
 import argparse
 import shutil
@@ -56,14 +51,14 @@ def translate(result, translation):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--density_path', type=str, default="/home/dataset-local/tyl/projects_dir/Molcular/ED2Mol-main/results/ligED/BSD_ASPTE_1_130_0/ligED.npy")
-    parser.add_argument('--frag', type=str, default="./data/crossdocked_test/BSD_ASPTE_1_130_0/2z3h_A_rec_1wn6_bst_lig_tt_docked_3.sdf")
-    parser.add_argument('--target', type=str, default="./data/crossdocked_test/BSD_ASPTE_1_130_0/2z3h_A_rec_1wn6_bst_lig_tt_docked_3_pocket10.pdb")
+    parser.add_argument('--density_path', type=str, default="./data/electron/ABL2_HUMAN_274_551_0/ligED-4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.npy")
+    parser.add_argument('--frag', type=str, default="./data/crossdocked_test/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0.sdf")
+    parser.add_argument('--target', type=str, default="./data/crossdocked_test/ABL2_HUMAN_274_551_0/4xli_B_rec_4xli_1n1_lig_tt_min_0_pocket10.pdb")
     parser.add_argument('--checkpoint', type=str, default='./logs/denovo/diffbp/pretrain/checkpoints/pretrained.pt')
     parser.add_argument('--classifier', type=str, default='./logs/charge/qm9_schnet')
     parser.add_argument('--model_name', type=str, default='diffbp')
-    parser.add_argument('--sample_num', type=int, default=10)
-    parser.add_argument('--batch_size', type=int, default=6)
+    parser.add_argument('--sample_num', type=int, default=5)
+    parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--out_root', type=str, default='./results/charge')
     parser.add_argument('--seed', type=int, default=2024)
     parser.add_argument('--device', type=str, default='cuda:0')
@@ -110,20 +105,7 @@ if __name__ == '__main__':
     save_dir = os.path.join(args.out_root, args.model_name)
     save_dir = os.path.join(save_dir, ligand_name)
     os.makedirs(save_dir, exist_ok=True)
-    for f in os.listdir(save_dir):
-        if f.split('_')[0]=='sample':
-            all_files.append(f)
-    all_files = sorted(all_files)
-    if len(all_files) > 0:
-        samples_idx = all_files[-1]
-        samples_idx = samples_idx.split('_')[-1]
-        samples_idx = int(samples_idx.split('.')[0])
-        num_samples = args.sample_num // 2 - samples_idx
-        if num_samples <= args.sample_num // 2:
-            print('Already generated samples for %s, skipping...' % ligand_name)
-            sys.exit(0)
     
-
     target_dict = PDBProteinFA(args.target).to_dict_atom()
     ligand_dict = parse_sdf_file(args.frag)
     data = EasyDict(

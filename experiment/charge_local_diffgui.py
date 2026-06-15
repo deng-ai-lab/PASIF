@@ -1,9 +1,4 @@
 import os, sys
-target_lib_path = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/lib"
-current_ld_path = os.environ.get("LD_LIBRARY_PATH", "")
-os.environ["LD_LIBRARY_PATH"] = f"{target_lib_path}:{current_ld_path}"
-os.environ["BABEL_LIBDIR"] = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/lib/openbabel/3.1.0"
-os.environ["BABEL_DATADIR"] = "/home/dataset-local/tyl/anaconda_tyl/envs/cbg/share/openbabel"
 sys.path.append("/home/dataset-local/tyl/projects_dir/Molcular/PASIF-release")
 import argparse
 import re
