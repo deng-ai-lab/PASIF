@@ -64,7 +64,7 @@ def main(base_result_path, base_pdb_path, exhaustiveness, eval_ref, verbose):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base_result_path', type=str, default='./results/linker/diffbp/pretrain-dr_slover', help="Base result path to traverse")
+    parser.add_argument('--base_result_path', type=str, default='./results/scaffold/targetdiff/pretrain-dr_slover', help="Base result path to traverse")
     parser.add_argument('--base_pdb_path', type=str, default='./data/crossdocked_test', help="Base PDB path for constructing pdb_path")
     parser.add_argument('--exhaustiveness', type=int, default=16, help="Exhaustiveness parameter for Vina docking")
     parser.add_argument('--eval_ref', type=bool, default=True, help="Whether to evaluate the reference ligand")

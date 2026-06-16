@@ -27,8 +27,8 @@ from repo.datasets.transforms.molecule_featurizer import FeaturizeLigandFullAtom
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--prop', default='ppb', type=str)
-    parser.add_argument('--config', default='./configs/admet/ppb/basic.yml', type=str)
-    parser.add_argument('--logdir', type=str, default='./logs/admet/ppb/basic', help='checkpoint dir of admet predictor')
+    parser.add_argument('--config', default='./configs/admet/ppb/add_aromatic.yml', type=str)
+    parser.add_argument('--logdir', type=str, default='./logs/admet/ppb/add_aromatic', help='checkpoint dir of admet predictor')
     parser.add_argument('--predictor', type=str, default='reg', help='reg: ppb; cls: oatp1b1 oatp1b3 cyp2c19_inh')      
     parser.add_argument('--debug', action='store_true', default=False)
     parser.add_argument('--device', type=str, default='cuda')
