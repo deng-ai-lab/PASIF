@@ -29,28 +29,10 @@ def process_one(test_turple):
         print(f'{file_name} should be processed!')
         return 1
 
-    out_path = os.path.join(f'./results/charge/{model}', pocket[:-4])
-    if os.path.exists(os.path.join(out_path, 'sample_0001.sdf')):
-        print(f'{pocket[:-4]} already be processed!')
-        return 1
-
     if model == 'diffgui':
         py_file = "./experiment/charge_global_diffgui.py"
     else:
         py_file = "./experiment/charge_global.py"
-
-    # if model == 'diffgui':
-    #     cmd = [
-    #     "python", py_file,
-    #     "--density_path", ligED_path,
-    #     "--frag", mol_path,
-    #     "--target", pocket_path,
-    #     "--checkpoint", f'./logs/denovo/{model}/pretrain/checkpoints/pretrained.pt',
-    #     '--model_name', model,
-    #     '--device', device,
-    #     '--out_root', './results/charge'
-    # ]
-    # else:
 
     cmd = [
         "python", py_file,
@@ -68,7 +50,6 @@ def process_one(test_turple):
 
 if __name__ == '__main__':
 
-    # assign mol size !!!!!
     model = 'diffbp'
     device = 'cuda:0'
     split_path = torch.load(f"./data/split_by_name_10m.pt")

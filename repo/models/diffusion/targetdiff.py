@@ -310,18 +310,15 @@ class TargetDiff(BaseDiff):
 
         pt0 = self.type_scheduler.Kt[t[0]].to(x_t.device)  # (S, S)
         pt0 = pt0[None, ...].repeat(L, 1, 1) # (L, S, S)
-        # pt0_x = pt0.gather(-1, x_t_idx.view(L, 1, 1).expand(-1, S, -1))[:, :, 0]
         pt0_x = pt0[torch.arange(L), :, x_t_idx]  # (L, S)
 
         qt = self.type_scheduler.qt(q0, pt0, batch_idx)  # (L, S)
         qt_x = qt[torch.arange(L), x_t_idx][:, None]  # (L, 1)
 
         q0t = (q0[:, :, None] * pt0) / qt[:, None, :].clamp(min=0.001, max=0.999)  # (L, S, S)
-        # q0t_x = q0t.gather(-1, x_t_idx.view(L, 1, 1).expand(-1, S, -1))[:, :, 0]  # (L, S)
         q0t_x = q0t[torch.arange(L), :, x_t_idx]  # (L, S)
 
         grad = pt0_x.clamp(min=1.e-3, max=0.999) * torch.log(q0t_x.clamp(min=1.e-3, max=0.999) / p0t.clamp(min=1.e-3, max=0.999)) / qt_x.clamp(min=1.e-3, max=0.999)
-        # grad = pt0_x.clamp(min=1.e-3, max=0.999) * torch.log(q0t_x.clamp(min=1.e-3, max=0.999) / p0t.clamp(min=1.e-3, max=0.999))
 
         loss_out = (grad.detach() * q0).mean()
 
@@ -340,7 +337,6 @@ class TargetDiff(BaseDiff):
         x_t_idx = torch.argmax(x_t, dim=-1)
 
         pT_pt = self.type_scheduler.pT_pt(t=t[0], p0t=p0t, x=x_t, batch_idx=batch_idx)  # (L,)
-        # pT_pt = pT_pt.clamp(min=1.e-3, max=0.999)[:, None]
         pT_pt = pT_pt[:, None] + 1.e-5
 
         pt0 = self.type_scheduler.Kt[t[0]].to(x_t.device)  # (S, S)
@@ -348,10 +344,7 @@ class TargetDiff(BaseDiff):
         qt = self.type_scheduler.qt(q0, pt0, batch_idx)  # (L, S)
         qt_x = qt[torch.arange(L), x_t_idx]  # (L,)
         qt_qT = qt_x / (1/S)
-        # qt_qT = qt_qT.clamp(min=1.e-3, max=0.999)[:, None]
         qt_qT = qt_qT[:, None] + 1.e-5
-
-        # grad = pt0[torch.arange(L), :, x_t_idx] * (torch.log(qt_qT) + torch.log(pT_pt)) + 1.  # (L, S)
 
         grad = pt0[torch.arange(L), :, x_t_idx] * (torch.log(qt_qT) + torch.log(pT_pt)) / qt_x[:, None] + 1.  # (L, S)
 

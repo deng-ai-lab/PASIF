@@ -242,34 +242,6 @@ class DiffSBDD(BaseDiff):
     @staticmethod
     def cdf_standard_gaussian(x):
         return 0.5 * (1. + torch.erf(x / math.sqrt(2)))
-
-    def frag_pocket_piror(self, mu_lig, xh0_pocket, x0_lig, gen_mask, lig_idx,
-                               pocket_idx, com=False):
-        
-        mu_lig_norm = torch.linalg.norm(mu_lig, dim=-1, keepdim=True)
-        mu_lig = (1. + 1./(mu_lig_norm+1.)) * mu_lig
-
-        B = lig_idx.max().item()+1
-        cov = torch.cov(x0_lig[lig_idx==0][~gen_mask[lig_idx==0]].T)
-        cov = cov / torch.det(cov)**(1/3)
-        cov = cov[None, ...].repeat(mu_lig.size(0), 1, 1) # frag are same alone batch
-        # cov = torch.zeros(B, mu_lig.size(1), mu_lig.size(1), device=lig_idx.device)
-        # for i in range(B):
-        #     cov[i] = torch.cov(x0_lig[lig_idx==i][~gen_mask[lig_idx==i]].T)
-        # cov = cov[lig_idx]
-        from torch.distributions import MultivariateNormal
-        dist = MultivariateNormal(mu_lig, cov)
-        out_lig = dist.sample()
-        # project to COM-free subspace
-        if com:
-            xh_pocket = xh0_pocket.detach().clone()
-            out_lig, xh_pocket = \
-                self.pos_scheduler.remove_mean_batch(out_lig,
-                                    xh0_pocket,
-                                    lig_idx, pocket_idx)
-            return out_lig, xh_pocket
-        else:
-            return out_lig
     
     def sample(self, batch):
         torch.set_grad_enabled(False)

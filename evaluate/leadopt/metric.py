@@ -12,7 +12,7 @@ def weighted_average(dataframe, value, weight=None):
 
 if __name__ == '__main__':
 
-    eval_root = './results/linker/diffbp/pretrain-dr_slover'
+    eval_root = './results/scaffold/targetdiff/pretrain-dr_slover'
     pockets = os.listdir(eval_root)
     pockets = sorted(pockets)
     pockets_num = len(pockets)

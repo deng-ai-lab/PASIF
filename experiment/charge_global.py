@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_name', type=str, default='diffbp')
     parser.add_argument('--sample_num', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=1)
-    parser.add_argument('--out_root', type=str, default='./results/charge')
+    parser.add_argument('--out_root', type=str, default='./results/charge_global')
     parser.add_argument('--seed', type=int, default=2024)
     parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--threshold', type=int, default=-1)
@@ -68,9 +68,8 @@ if __name__ == '__main__':
 
     seed_all(args.seed)
 
-    # ligand_name = '' + args.target.split('/')[-2]   # tyll!!!!!!!
-    ligand_name = '/'.join(args.target.split('/')[-2:])   # tyll!!!!!!!
-    ligand_name = ligand_name[:-4]     # tyll!!!!!!!
+    ligand_name = '/'.join(args.target.split('/')[-2:])
+    ligand_name = ligand_name[:-4]
     print(ligand_name)
     if len(args.model_name.split('-')) == 1:
         model_name = args.model_name + '-' + args.classifier.split('/')[-1]
@@ -101,7 +100,6 @@ if __name__ == '__main__':
     if os.path.exists(args.out_root) is False:
         os.makedirs(args.out_root)
     
-    all_files = []
     save_dir = os.path.join(args.out_root, args.model_name)
     save_dir = os.path.join(save_dir, ligand_name)
     os.makedirs(save_dir, exist_ok=True)
@@ -138,23 +136,6 @@ if __name__ == '__main__':
     enough_flag = False
     for batch in tqdm(loader, desc='ele density', dynamic_ncols=True):
 
-        all_files = []
-        save_dir = os.path.join(args.out_root, args.model_name)
-        save_dir = os.path.join(save_dir, ligand_name)
-        os.makedirs(save_dir, exist_ok=True)
-        for f in os.listdir(save_dir):
-            if f.split('_')[0]=='sample':
-                all_files.append(f)
-        all_files = sorted(all_files)
-        if len(all_files) > 0:
-            samples_idx = all_files[-1]
-            samples_idx = samples_idx.split('_')[-1]
-            samples_idx = int(samples_idx.split('.')[0])
-            num_samples = args.sample_num - samples_idx
-            if num_samples <= 0:
-                print('Already generated enough samples for %s, skipping...' % ligand_name)
-                break
-
         try:
             batch = batch.to(args.device)
         except:
@@ -188,7 +169,7 @@ if __name__ == '__main__':
                     
                 mol, success = evaluate_validity(mol, args.threshold, args.threshold_ratio)
                 if success:
-                    if count >= args.sample_num//2:
+                    if count >= args.sample_num:
                         enough_flag = True
                         break
                     count += 1

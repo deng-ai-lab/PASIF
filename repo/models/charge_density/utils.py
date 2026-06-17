@@ -159,8 +159,6 @@ def prepare_input_given_grid_diffgui(outputs, batch_node, halfedge_index,
                                         mol_info['element'].tolist())
         ori_num = len(output_mol['pred'][1])
         density_dict = load_data_given_gridpos(mol, ori_num, grid_pos=grid_pos, addH=local)
-        # density_dict = load_data_given_gridpos_v2(mol_info['atom_pos'], mol_info['element'], 
-        #                                           ori_num, grid_pos=grid_pos-offset[i_mol])
         if local:
             prop_pos = density_dict['grid_position']
             mask = np.ones_like(prop_pos[..., -1], dtype=bool)
@@ -196,8 +194,6 @@ def prepare_input_given_grid(batch, device, params, label, local=False):
     i = 0
     for result in batch_split:
         try:
-            # mol = obabel_recover_bond(result['pos'], 
-            #                           result['atom'])
             mol = reconstruct_mol(result['pos'], 
                                   result['atom'], 
                                   result['aromatic'], 
@@ -206,9 +202,6 @@ def prepare_input_given_grid(batch, device, params, label, local=False):
             mol = obabel_recover_bond(result['pos'], 
                                       result['atom'])
         ori_num = len(result['pos'])
-        # if mode == 'basic':
-        #     density_dict = load_data_given_gridpos(mol, ori_num, grid_pos=params['grid_pos'], addH=False)
-        # else:
         density_dict = load_data_given_gridpos(mol, ori_num, grid_pos=params['grid_pos'], addH=local)
         if local:
             prop_pos = density_dict['grid_position']
