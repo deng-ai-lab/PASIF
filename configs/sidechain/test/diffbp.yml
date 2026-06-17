@@ -2,7 +2,7 @@ model:
   type: diffbp
   checkpoint: ./logs/denovo/diffbp/selftrain/checkpoints/4000000.pt
 
-predictor: !include ./configs/classifier/prop_add_aromatic.yml
+# predictor: !include ./configs/classifier/prop_add_aromatic.yml
 
 data:
   test: 

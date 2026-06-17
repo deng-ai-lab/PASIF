@@ -600,6 +600,7 @@ class DiffSBDD(BaseDiff):
         tar_prop = params['tar_density'][None, :].repeat(B, 1)
         gird_pos = params['grid_pos'] - batch.protein_translation[:1].cpu().numpy()
         if local:
+            # Lower the resolution to improve sampling efficiency
             tar_mask = params['charge_mask']
             charge_mask = tar_mask.reshape(100, 100, 100)
             charge_mask = charge_mask[::2, ::2, ::2].reshape(-1).bool()
