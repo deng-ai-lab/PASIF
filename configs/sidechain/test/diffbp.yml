@@ -51,7 +51,7 @@ data:
 
 sampling:
   seed: 2022
-  num_samples: 50
+  num_samples: 100
   translate: true
 
 reconstruct:
