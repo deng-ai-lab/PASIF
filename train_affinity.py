@@ -31,13 +31,6 @@ if __name__ == '__main__':
 
     just_lig = False
 
-    if args.tag == 'gauss-train':
-        discrete = 'gauss'
-    elif args.tag == 'absorb-train':
-        discrete = 'absorbing'
-    elif args.tag == 'uniform-train':
-        discrete = 'uniform'
-
     mode = args.config.split('/')[-1][:-4]
     # Load configs
     config, config_name = load_config(args.config)
@@ -123,7 +116,6 @@ if __name__ == '__main__':
     else:
         protein_dim = None
     model = PropPredictor(cfg=config.model, protein_dim=protein_dim).to(args.device)
-    # model = AffinityPredictor(cfg=config.model).to(args.device)
     logger.info('Number of parameters: %d' % count_parameters(model))
 
     # Optimizer & Scheduler
@@ -271,7 +263,6 @@ if __name__ == '__main__':
                                     f'Best val loss: {best_loss:.6f} at iter {best_iter}')
                 except IndexError:
                     print('Something wrong with the indexes in the validation set. Skip the validation.')
-            # it += 1
                 
     except KeyboardInterrupt:
         logger.info('Terminating...')
